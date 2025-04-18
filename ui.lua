@@ -1,85 +1,85 @@
--- ui.lua
 local UILib = {}
 
--- Create ScreenGui
 local gui = Instance.new("ScreenGui")
-gui.Name = "SleekUILib"
+gui.Name = "RitualUILib"
 gui.ResetOnSpawn = false
-pcall(function()
-    gui.Parent = game:GetService("CoreGui")
-end)
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 
--- Tweening function
-local function tween(obj, props, time)
-    game:GetService("TweenService"):Create(obj, TweenInfo.new(time or 0.2), props):Play()
+-- Create base frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 410, 0, 419)
+mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+mainFrame.BackgroundColor3 = Color3.fromRGB(21, 21, 21)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = gui
+
+-- TopBar
+local topBar = Instance.new("TextLabel")
+topBar.Size = UDim2.new(0, 202, 0, 39)
+topBar.Position = UDim2.new(0.25, 0, 0.02, 0)
+topBar.BackgroundTransparency = 1
+topBar.Font = Enum.Font.DenkOne
+topBar.Text = "ritual"
+topBar.TextScaled = true
+topBar.TextColor3 = Color3.fromRGB(147, 0, 2)
+topBar.Parent = mainFrame
+
+-- Scroll Frame
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size = UDim2.new(0, 373, 0, 370)
+scroll.Position = UDim2.new(0.05, 0, 0.1, 0)
+scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+scroll.BackgroundTransparency = 1
+scroll.BorderSizePixel = 0
+scroll.ScrollBarThickness = 6
+scroll.Parent = mainFrame
+
+local UIListLayout = Instance.new("UIListLayout", scroll)
+UIListLayout.Padding = UDim.new(0, 10)
+
+-- === ADDERS ===
+
+function UILib:AddButton(text, callback)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -20, 0, 35)
+    button.BackgroundTransparency = 0.1
+    button.BackgroundColor3 = Color3.fromRGB(147, 0, 2)
+    button.Text = text
+    button.Font = Enum.Font.DenkOne
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.TextScaled = true
+    button.AutoButtonColor = true
+    button.Parent = scroll
+
+    local corner = Instance.new("UICorner", button)
+
+    button.MouseButton1Click:Connect(function()
+        pcall(callback)
+    end)
 end
 
--- Main Window Function
-function UILib:CreateWindow(title)
-    local self = {}
+function UILib:AddLabel(text)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -20, 0, 25)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.Font = Enum.Font.DenkOne
+    label.TextColor3 = Color3.new(1, 1, 1)
+    label.TextScaled = true
+    label.Parent = scroll
+end
 
-    -- Main Frame
-    local main = Instance.new("Frame")
-    main.Size = UDim2.new(0, 500, 0, 300)
-    main.Position = UDim2.new(0.5, -250, 0.5, -150)
-    main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    main.BorderSizePixel = 0
-    main.Active = true
-    main.Draggable = true
-    main.Parent = gui
+function UILib:AddHeader(text)
+    local header = Instance.new("TextLabel")
+    header.Size = UDim2.new(1, -20, 0, 30)
+    header.BackgroundTransparency = 1
+    header.Text = text
+    header.Font = Enum.Font.DenkOne
+    header.TextColor3 = Color3.fromRGB(135, 38, 39)
+    header.TextScaled = true
+    header.Parent = scroll
+end
 
-    -- Corner
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 8)
-    corner.Parent = main
-
-    -- Title
-    local titleLabel = Instance.new("TextLabel")
-    titleLabel.Size = UDim2.new(1, 0, 0, 40)
-    titleLabel.BackgroundTransparency = 1
-    titleLabel.Text = title or "UI Library"
-    titleLabel.Font = Enum.Font.GothamBold
-    titleLabel.TextSize = 20
-    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    titleLabel.TextXAlignment = Enum.TextXAlignment.Center
-    titleLabel.Parent = main
-
-    -- Tabs Bar
-    local tabBar = Instance.new("Frame")
-    tabBar.Size = UDim2.new(0, 120, 1, -40)
-    tabBar.Position = UDim2.new(0, 0, 0, 40)
-    tabBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    tabBar.BorderSizePixel = 0
-    tabBar.Parent = main
-
-    local tabCorner = Instance.new("UICorner")
-    tabCorner.CornerRadius = UDim.new(0, 6)
-    tabCorner.Parent = tabBar
-
-    -- Content Frame
-    local contentFrame = Instance.new("Frame")
-    contentFrame.Size = UDim2.new(1, -130, 1, -50)
-    contentFrame.Position = UDim2.new(0, 130, 0, 50)
-    contentFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    contentFrame.BorderSizePixel = 0
-    contentFrame.Parent = main
-
-    local contentCorner = Instance.new("UICorner")
-    contentCorner.CornerRadius = UDim.new(0, 6)
-    contentCorner.Parent = contentFrame
-
-    local tabs = {}
-
-    function self:CreateTab(tabName)
-        local tab = {}
-
-        -- Tab Button
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1, -10, 0, 30)
-        btn.Position = UDim2.new(0, 5, 0, (#tabs * 35) + 5)
-        btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-        btn.Text = tabName
-        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        btn.Font = Enum.Font.Gotham
-        btn.TextSize = 14
-        btn
+return UILib
