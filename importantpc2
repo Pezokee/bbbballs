@@ -1,0 +1,2798 @@
+local paradox = loadstring(game:HttpGet("https://raw.githubusercontent.com/paradoxroblox/paradox/discord.gg/paradoxroblox/library"))()
+
+paradox:window({
+	currentgame = "pillar chase 2",
+	version = "v1.0.0"
+})
+
+paradox:tab({
+	name = "main",
+	image = "rbxassetid://10723407389"
+})
+
+paradox:tab({
+	name = "visuals",
+	image = "rbxassetid://10723346959"
+})
+
+paradox:tab({
+	name = "colors", 
+	image = "rbxassetid://10734910187"
+})
+
+paradox:tab({
+	name = "other",
+	image = "rbxassetid://10723387563"
+})
+
+paradox:tab({
+	name = "upgrades",
+	image = "rbxassetid://10709762879"
+})
+
+paradox:tab({
+	name = "teleports",
+	image = "rbxassetid://18752306352"
+})
+
+if not game:GetService("UserInputService").KeyboardEnabled then
+	paradox:corebutton({
+		name = "stamina",
+		callback = function(state)
+			if state == true then
+				_G.staminaenabled = true
+			else
+				_G.staminaenabled = false
+				wait(0.1)
+				if game.Players.LocalPlayer.Character:FindFirstChild("Aspects") then
+					game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = game.Players.LocalPlayer.Character.Aspects.WalkSpeed.Value
+				else
+					game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
+				end
+			end
+		end,
+	})
+end
+
+paradox:slider({
+	name = "field of view",
+	starting = "70",
+	max = 1.2,
+	min = 0.7,
+	parent = "main",
+	callback = function(number)
+		fovvalue = number
+		if setfov == true then
+			workspace.CurrentCamera.FieldOfView = tonumber(fovvalue) or 90
+		end
+	end,
+})
+
+paradox:slider({
+	name = "walkspeed",
+	starting = "10",
+	max = 0.5,
+	min = 0.1,
+	parent = "main",
+	callback = function(number)
+		walkspeedvalue = number
+	end,
+})
+
+paradox:slider({
+	name = "sprint speed",
+	starting = "23",
+	max = 1.0,
+	min = 0.23,
+	parent = "main",
+	callback = function(number)
+		sprintvalue = number
+	end,
+})
+
+
+paradox:toggle({
+	name = "set fov",
+	parent = "main",
+	callback = function(state)
+		local camera = workspace.CurrentCamera
+		if state then
+			setfov = true
+			workspace.CurrentCamera.FieldOfView = tonumber(fovvalue) or 90
+
+			fovloop = camera:GetPropertyChangedSignal("FieldOfView"):Connect(function()
+				workspace.CurrentCamera.FieldOfView = tonumber(fovvalue) or 90
+			end)
+		else
+			setfov = false
+			fovloop:Disconnect()
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "set walkspeed",
+	parent = "main",
+	callback = function(state)
+		if state == true then
+			walkspeedloop = game:GetService("RunService").RenderStepped:Connect(function()
+				game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = walkspeedvalue
+			end)
+		else
+			walkspeedloop:Disconnect()
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "set sprint speed",
+	parent = "main",
+	callback = function(state)
+		if state == true then
+			if game.Players.LocalPlayer.Character:WaitForChild("Aspects") then
+				if game.Players.LocalPlayer.Character.Aspects:WaitForChild("SprintSpeed") then
+					game.Players.LocalPlayer.Character.Aspects.SprintSpeed.Value = sprintvalue
+				end
+			end
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "player esp",
+	parent = "visuals",
+	callback = function(state)
+		if state == true then
+			playeresp = game:GetService("RunService").RenderStepped:Connect(function()
+				for _, v in pairs(game.Players:GetPlayers()) do
+					if v ~= game.Players.LocalPlayer and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+						if not v.Character:FindFirstChild("playeresp") then
+							local highlight = Instance.new("Highlight")
+		
+							highlight.Name = "playeresp"
+							highlight.Parent = v.Character
+							highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+							highlight.FillColor = Color3.fromRGB(255, 255, 255)
+							highlight.FillTransparency = 0.6
+							highlight.OutlineColor = Color3.fromRGB(0, 0, 0)
+							highlight.OutlineTransparency = 0.2
+						end
+					end
+				end
+		
+				for _, v in pairs(game.Players:GetPlayers()) do
+					if v ~= game.Players.LocalPlayer and v.Character then
+						local highlight = v.Character:FindFirstChild("playeresp")
+						if highlight then
+							if v.Character:FindFirstChild("CanDrain") then
+								highlight.FillColor = _G.killerespcolor or Color3.fromRGB(255, 0, 0)
+							else
+								highlight.FillColor = _G.survivorespcolor or Color3.fromRGB(255, 255, 255)
+							end
+						end
+					end
+				end
+			end)
+
+			if game.Players.LocalPlayer.Character:FindFirstChild("CanDrain") then
+				wait(2)
+				for _, v in pairs(game.Players:GetChildren()) do
+					if v ~= game.Players.LocalPlayer then
+						if v.Character:FindFirstChild("playeresp") then
+							v.Character.playeresp:Destroy()
+						end
+					end
+				end
+			end
+
+			playeresploop = game.Players.LocalPlayer.Character.ChildAdded:Connect(function(child)
+				if child.Name == "CanDrain" then
+					wait(10)
+					for _, v in pairs(game.Players:GetChildren()) do
+						if v ~= game.Players.LocalPlayer then
+							if v.Character:FindFirstChild("playeresp") then
+								v.Character.playeresp:Destroy()
+							end
+						end
+					end
+				end
+			end)
+
+			playeresploopadded = game.Players.LocalPlayer.CharacterAdded:Connect(function(characterparadox)
+				playeresploop2 = characterparadox.ChildAdded:Connect(function(child)
+					if child.Name == "CanDrain" then
+						wait(10)
+						for _, v in pairs(game.Players:GetChildren()) do
+							if v ~= game.Players.LocalPlayer then
+								if v.Character:FindFirstChild("playeresp") then
+									v.Character.playeresp:Destroy()
+								end
+							end
+						end
+					end
+				end)
+			end)
+		else
+			playeresp:Disconnect()
+			for _, v in pairs(workspace:GetDescendants()) do
+				if v.Name == "playeresp" then
+					v:Destroy()
+				end
+			end
+		end			
+	end,
+})
+
+paradox:toggle({
+	name = "name esp",
+	parent = "visuals",
+	callback = function(state)
+		if state == true then
+			nameesp = game:GetService("RunService").RenderStepped:Connect(function()
+				for _, v in pairs(game.Players:GetPlayers()) do
+					if v ~= game.Players.LocalPlayer and v.Character then
+						local head = v.Character:FindFirstChild("Head")
+						if head and not head:FindFirstChild("nameesp") then
+							local bbg = Instance.new("BillboardGui")
+							local label = Instance.new("TextLabel")
+		
+							bbg.Name = "nameesp"
+							bbg.Parent = head
+							bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+							bbg.Active = true
+							bbg.AlwaysOnTop = true
+							bbg.LightInfluence = 1.000
+							bbg.Size = UDim2.new(0, 200, 0, 50)
+							bbg.StudsOffset = Vector3.new(0, 1.8, 0)
+		
+							label.Name = "label"
+							label.Parent = bbg
+							label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+							label.BackgroundTransparency = 1.000
+							label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+							label.BorderSizePixel = 0
+							label.Position = UDim2.new(0, -50, 0, 0)
+							label.Size = UDim2.new(0, 300, 0, 20)
+							label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+							label.Text = string.lower(v.Name)
+							label.TextColor3 = Color3.fromRGB(255, 255, 255)
+							label.TextSize = 14.000
+							label.TextStrokeTransparency = 0.000
+						end
+					end
+				end
+		
+				for _, v in pairs(game.Players:GetPlayers()) do
+					if v ~= game.Players.LocalPlayer and v.Character then
+						local head = v.Character:FindFirstChild("Head")
+						local nameTag = head and head:FindFirstChild("nameesp")
+		
+						if nameTag and nameTag:FindFirstChild("label") then
+							if v.Character:FindFirstChild("CanDrain") then
+								nameTag.label.TextColor3 = _G.killerespcolor or Color3.fromRGB(255, 0, 0)
+							else
+								nameTag.label.TextColor3 = _G.survivorespcolor or Color3.fromRGB(255, 255, 255)
+							end
+						end
+					end
+				end				
+			end)
+
+			deadbody = workspace:WaitForChild("Map").ChildAdded:Connect(function(child)
+				for _, v in pairs(game.Players:GetChildren()) do
+					if child.Name == v.Name then
+						if child:FindFirstChild("Aspects") then
+							if child.Aspects:WaitForChild("Alive").Value == false then
+								if child:WaitForChild("Head"):FindFirstChild("nameesp") then
+									child.Head.nameesp:Destroy()
+								end
+							end
+						end
+					end
+				end
+			end)
+
+			deadbodyws = workspace.ChildAdded:Connect(function(child)
+				if child.Name == "Map" then
+					deadbodysws2 = child.ChildAdded:Connect(function(child2)
+						for _, v in pairs(game.Players:GetChildren()) do
+							if child2.Name == v.Name then
+								if child2:FindFirstChild("Aspects") then
+									if child2.Aspects:WaitForChild("Alive").Value == false then
+										if child2:WaitForChild("Head"):FindFirstChild("nameesp") then
+											child2.Head.nameesp:Destroy()
+										end
+									end
+								end
+							end
+						end
+					end)
+				end
+			end)
+		else
+			nameesp:Disconnect()
+			for _, v in pairs(workspace:GetDescendants()) do
+				if v.Name == "nameesp" then
+					v:Destroy()
+				end
+			end
+		end			
+	end,
+})
+
+paradox:toggle({
+	name = "item esp",
+	parent = "visuals",
+	callback = function(state)
+		if state == true then
+			itemesp = game:GetService("RunService").RenderStepped:Connect(function()
+				for _, v in pairs(workspace.Server.PickUps:GetChildren()) do
+					if not v:FindFirstChild("itemesp") then
+						local bbg = Instance.new("BillboardGui")
+						local label = Instance.new("TextLabel")
+	
+						bbg.Name = "itemesp"
+						bbg.Parent = v
+						bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+						bbg.Active = true
+						bbg.AlwaysOnTop = true
+						bbg.LightInfluence = 1.000
+						bbg.Size = UDim2.new(0, 200, 0, 50)
+	
+						label.Name = "label"
+						label.Parent = bbg
+						label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+						label.BackgroundTransparency = 1.000
+						label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+						label.BorderSizePixel = 0
+						label.Position = UDim2.new(0, -50, 0, 0)
+						label.Size = UDim2.new(0, 300, 0, 20)
+						label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+						label.Text = string.lower(v.Name)
+						label.TextColor3 = _G.itemespcolor or Color3.fromRGB(165, 165, 165)
+						label.TextSize = 14.000
+						label.TextStrokeTransparency = 0.000
+					end
+				end
+			end)
+
+			itemespaddedcheck = workspace.Server.PickUps.ChildAdded:Connect(function(item)
+				if item:FindFirstChild("itemesp") then
+					item.itemesp.Enabled = true
+				end
+			end)
+
+			itemespremovedcheck = workspace.Server.PickUps.ChildRemoved:Connect(function(item)
+				if item:FindFirstChild("itemesp") then
+					item.itemesp.Enabled = false
+				end
+			end)
+		else
+			if itemesp then
+				itemesp:Disconnect()
+				itemespaddedcheck:Disconnect()
+				itemespremovedcheck:Disconnect()
+			end
+			for _, v in pairs(workspace:GetDescendants()) do
+				if v.Name == "itemesp" then
+					v:Destroy()
+				end
+			end
+		end			
+	end,
+})
+
+paradox:toggle({
+	name = "objective esp",
+	parent = "visuals",
+	callback = function(state)
+		if state == true then
+			local objectiveesp = nil
+			local addedObjects = {}
+
+			if workspace:FindFirstChild("Map") then
+				for _, folderName in ipairs({"ObjectiveInteract", "ObjectiveInteract2", "Collectibles"}) do
+					if workspace.Map:FindFirstChild(folderName) then
+						for _, v in pairs(workspace.Map[folderName]:GetChildren()) do
+							if not v:FindFirstChild("objectiveesp") then
+								local bbg = Instance.new("BillboardGui")
+								local label = Instance.new("TextLabel")
+
+								bbg.Name = "objectiveesp"
+								bbg.Parent = v
+								bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+								bbg.Active = true
+								bbg.AlwaysOnTop = true
+								bbg.LightInfluence = 1.000
+								bbg.Size = UDim2.new(0, 200, 0, 50)
+								bbg.Enabled = true
+
+								label.Name = "label"
+								label.Parent = bbg
+								label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+								label.BackgroundTransparency = 1.000
+								label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+								label.BorderSizePixel = 0
+								label.Position = UDim2.new(0, -50, 0, 0)
+								label.Size = UDim2.new(0, 300, 0, 20)
+								label.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+								label.Text = string.lower(v.Name)
+								label.TextColor3 = folderName == "ObjectiveInteract" and (_G.objectiveesp1color or Color3.fromRGB(255, 165, 0)) or (_G.objectiveesp2color or Color3.fromRGB(255, 20, 147))
+								label.TextSize = 14.000
+								label.TextStrokeTransparency = 0.000
+
+								addedObjects[v] = bbg
+
+								local hasProximityPrompt = false
+								local anyPromptEnabled = false
+
+								for _, descendant in ipairs(v:GetDescendants()) do
+									if descendant:IsA("ProximityPrompt") then
+										hasProximityPrompt = true
+										if descendant.Enabled then
+											anyPromptEnabled = true
+										end
+
+										descendant:GetPropertyChangedSignal("Enabled"):Connect(function()
+											anyPromptEnabled = descendant.Enabled
+											if bbg.Parent.Parent.Name == "Collectibles" then
+												bbg.Enabled = true
+											else
+												bbg.Enabled = anyPromptEnabled
+											end
+										end)
+
+										descendant.AncestryChanged:Connect(function()
+											if not descendant.Parent then
+												bbg.Enabled = false
+											end
+										end)
+									end
+								end
+
+								if not hasProximityPrompt then
+									if bbg.Parent.Name == "Box" or bbg.Parent.Parent.Name == "Collectibles" then
+										bbg.Enabled = true
+									else
+										bbg.Enabled = false
+									end
+								else
+									if bbg.Parent.Parent.Name == "Collectibles" then
+										bbg.Enabled = true
+									else
+										bbg.Enabled = anyPromptEnabled
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+
+			objectiveesp = workspace.ChildAdded:Connect(function()
+				task.wait(1)
+				if workspace:FindFirstChild("Map") then
+					for _, folderName in ipairs({"ObjectiveInteract", "ObjectiveInteract2", "Collectibles"}) do
+						if workspace.Map:FindFirstChild(folderName) then
+							for _, v in pairs(workspace.Map[folderName]:GetChildren()) do
+								if not addedObjects[v] then
+									local bbg = Instance.new("BillboardGui")
+									local label = Instance.new("TextLabel")
+
+									bbg.Name = "objectiveesp"
+									bbg.Parent = v
+									bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+									bbg.Active = true
+									bbg.AlwaysOnTop = true
+									bbg.LightInfluence = 1.000
+									bbg.Size = UDim2.new(0, 200, 0, 50)
+									bbg.Enabled = true
+
+									label.Name = "label"
+									label.Parent = bbg
+									label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+									label.BackgroundTransparency = 1.000
+									label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+									label.BorderSizePixel = 0
+									label.Position = UDim2.new(0, -50, 0, 0)
+									label.Size = UDim2.new(0, 300, 0, 20)
+									label.FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+									label.Text = string.lower(v.Name)
+									label.TextColor3 = folderName == "ObjectiveInteract" and (_G.objectiveesp1color or Color3.fromRGB(255, 165, 0)) or (_G.objectiveesp2color or Color3.fromRGB(255, 20, 147))
+									label.TextSize = 14.000
+									label.TextStrokeTransparency = 0.000
+
+									addedObjects[v] = bbg
+
+									local hasProximityPrompt = false
+									local anyPromptEnabled = false
+	
+									for _, descendant in ipairs(v:GetDescendants()) do
+										if descendant:IsA("ProximityPrompt") then
+											hasProximityPrompt = true
+											if descendant.Enabled then
+												anyPromptEnabled = true
+											end
+	
+											descendant:GetPropertyChangedSignal("Enabled"):Connect(function()
+												anyPromptEnabled = descendant.Enabled
+												if bbg.Parent.Parent.Name == "Collectibles" then
+													bbg.Enabled = true
+												else
+													bbg.Enabled = anyPromptEnabled
+												end
+											end)
+	
+											descendant.AncestryChanged:Connect(function()
+												if not descendant.Parent then
+													bbg.Enabled = false
+												end
+											end)
+										end
+									end
+
+									if not hasProximityPrompt then
+										if bbg.Parent.Name == "Box" or bbg.Parent.Parent.Name == "Collectibles" then
+											bbg.Enabled = true
+										else
+											bbg.Enabled = false
+										end
+									else
+										if bbg.Parent.Parent.Name == "Collectibles" then
+											bbg.Enabled = true
+										else
+											bbg.Enabled = anyPromptEnabled
+										end
+									end
+								end
+							end
+						end
+					end
+				end
+			end)
+
+			objectiveespws = game.Players.LocalPlayer.Character.ChildAdded:Connect(function(child)
+				if child.Name == "CanDrain" then
+					for _, v in pairs(workspace:GetDescendants()) do
+						if v.Name == "objectiveesp" then
+							v.Enabled = false
+						end
+					end
+				end
+			end)
+
+			objectiveespcharacteradded = game.Players.LocalPlayer.CharacterAdded:Connect(function(characterparadox)
+				if characterparadox then
+					objectiveespws2 = characterparadox.ChildAdded:Connect(function(child2)
+						if child2.Name == "CanDrain" then
+							for _, v in pairs(workspace:GetDescendants()) do
+								if v.Name == "objectiveesp" then
+									v.Enabled = false
+								end
+							end
+						end
+					end)
+				end
+			end)
+		else
+			if objectiveesp then
+				objectiveesp:Disconnect()
+				objectiveespws:Disconnect()
+				objectiveespcharacteradded:Disconnect()
+				objectiveespws2:Disconnect()
+				objectiveesp = nil
+			end
+			for _, v in pairs(workspace:GetDescendants()) do
+				if v.Name == "objectiveesp" then
+					v:Destroy()
+				end
+			end
+		end
+	end,
+})	
+
+
+paradox:toggle({
+	name = "skull spider esp",
+	parent = "visuals",
+	callback = function(state)
+		if state == true then
+			for _, v in pairs(workspace:GetChildren()) do
+				if v.Name == "SpiderSkull" then
+					if not v:FindFirstChild("skullspideresp") then
+						local bbg = Instance.new("BillboardGui")
+						local label = Instance.new("TextLabel")
+	
+						bbg.Name = "skullspideresp"
+						bbg.Parent = v
+						bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+						bbg.Active = true
+						bbg.AlwaysOnTop = true
+						bbg.LightInfluence = 1.000
+						bbg.Size = UDim2.new(0, 200, 0, 50)
+	
+						label.Name = "label"
+						label.Parent = bbg
+						label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+						label.BackgroundTransparency = 1.000
+						label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+						label.BorderSizePixel = 0
+						label.Position = UDim2.new(0, -50, 0, 0)
+						label.Size = UDim2.new(0, 300, 0, 20)
+						label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+						label.Text = "skull spider"
+						label.TextColor3 = _G.skullspiderespcolor or Color3.fromRGB(165, 0, 0)
+						label.TextSize = 14.000
+						label.TextStrokeTransparency = 0.000
+					end
+				end
+			end
+
+			skullspideresp = workspace.ChildAdded:Connect(function(child)
+				if child.Name == "SpiderSkull" then
+					if not child:FindFirstChild("skullspideresp") then
+						local bbg = Instance.new("BillboardGui")
+						local label = Instance.new("TextLabel")
+	
+						bbg.Name = "skullspideresp"
+						bbg.Parent = child
+						bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+						bbg.Active = true
+						bbg.AlwaysOnTop = true
+						bbg.LightInfluence = 1.000
+						bbg.Size = UDim2.new(0, 200, 0, 50)
+	
+						label.Name = "label"
+						label.Parent = bbg
+						label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+						label.BackgroundTransparency = 1.000
+						label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+						label.BorderSizePixel = 0
+						label.Position = UDim2.new(0, -50, 0, 0)
+						label.Size = UDim2.new(0, 300, 0, 20)
+						label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+						label.Text = "skull spider"
+						label.TextColor3 = _G.skullspiderespcolor or Color3.fromRGB(165, 0, 0)
+						label.TextSize = 14.000
+						label.TextStrokeTransparency = 0.000
+					end
+				end
+			end)
+
+			skullspiderespws = workspace.ChildAdded:Connect(function(child)
+				if child.Name == "Map" then
+					skullspiderespws2 = child.ChildAdded:Connect(function(child2)
+						if child2.Name == "SpiderSkull" then
+							if not child2:FindFirstChild("skullspideresp") then
+								local bbg = Instance.new("BillboardGui")
+								local label = Instance.new("TextLabel")
+			
+								bbg.Name = "skullspideresp"
+								bbg.Parent = child2
+								bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+								bbg.Active = true
+								bbg.AlwaysOnTop = true
+								bbg.LightInfluence = 1.000
+								bbg.Size = UDim2.new(0, 200, 0, 50)
+			
+								label.Name = "label"
+								label.Parent = bbg
+								label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+								label.BackgroundTransparency = 1.000
+								label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+								label.BorderSizePixel = 0
+								label.Position = UDim2.new(0, -50, 0, 0)
+								label.Size = UDim2.new(0, 300, 0, 20)
+								label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+								label.Text = "skull spider"
+								label.TextColor3 = _G.skullspiderespcolor or Color3.fromRGB(165, 0, 0)
+								label.TextSize = 14.000
+								label.TextStrokeTransparency = 0.000
+							end
+						end
+					end)
+				end
+			end)
+		else
+			if skullspideresp then
+				skullspideresp:Disconnect()
+				skullspiderespws:Disconnect()
+				skullspiderespws2:Disconnect()
+			end
+			for _, v in pairs(workspace:GetDescendants()) do
+				if v.Name == "skullspideresp" then
+					v:Destroy()
+				end
+			end
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "notebook esp",
+	parent = "visuals",
+	callback = function(state)
+		if state == true then
+			for _, v in pairs(workspace:WaitForChild("Map"):GetChildren()) do
+				if v.Name == "NoteBook" then
+					if not v:FindFirstChild("notebookesp") then
+						local bbg = Instance.new("BillboardGui")
+						local label = Instance.new("TextLabel")
+	
+						bbg.Name = "notebookesp"
+						bbg.Parent = v
+						bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+						bbg.Active = true
+						bbg.AlwaysOnTop = true
+						bbg.LightInfluence = 1.000
+						bbg.Size = UDim2.new(0, 200, 0, 50)
+	
+						label.Name = "label"
+						label.Parent = bbg
+						label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+						label.BackgroundTransparency = 1.000
+						label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+						label.BorderSizePixel = 0
+						label.Position = UDim2.new(0, -50, 0, 0)
+						label.Size = UDim2.new(0, 300, 0, 20)
+						label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+						label.Text = "notebook"
+						label.TextColor3 = _G.notebookespcolor or Color3.fromRGB(0, 200, 0)
+						label.TextSize = 14.000
+						label.TextStrokeTransparency = 0.000
+					end
+				end
+			end
+
+			notebookesp = workspace:WaitForChild("Map").ChildAdded:Connect(function(child)
+				if child.Name == "NoteBook" then
+					if not child:FindFirstChild("notebookesp") then
+						local bbg = Instance.new("BillboardGui")
+						local label = Instance.new("TextLabel")
+	
+						bbg.Name = "notebookesp"
+						bbg.Parent = child
+						bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+						bbg.Active = true
+						bbg.AlwaysOnTop = true
+						bbg.LightInfluence = 1.000
+						bbg.Size = UDim2.new(0, 200, 0, 50)
+	
+						label.Name = "label"
+						label.Parent = bbg
+						label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+						label.BackgroundTransparency = 1.000
+						label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+						label.BorderSizePixel = 0
+						label.Position = UDim2.new(0, -50, 0, 0)
+						label.Size = UDim2.new(0, 300, 0, 20)
+						label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+						label.Text = "notebook"
+						label.TextColor3 = _G.notebookespcolor or Color3.fromRGB(0, 200, 0)
+						label.TextSize = 14.000
+						label.TextStrokeTransparency = 0.000
+					end
+				end
+			end)
+
+			notebookespws = workspace.ChildAdded:Connect(function(child)
+				if child.Name == "Map" then
+					notebookespws2 = child.ChildAdded:Connect(function(child2)
+						if child2.Name == "NoteBook" then
+							if not child2:FindFirstChild("notebookesp") then
+								local bbg = Instance.new("BillboardGui")
+								local label = Instance.new("TextLabel")
+			
+								bbg.Name = "notebookesp"
+								bbg.Parent = child2
+								bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+								bbg.Active = true
+								bbg.AlwaysOnTop = true
+								bbg.LightInfluence = 1.000
+								bbg.Size = UDim2.new(0, 200, 0, 50)
+			
+								label.Name = "label"
+								label.Parent = bbg
+								label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+								label.BackgroundTransparency = 1.000
+								label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+								label.BorderSizePixel = 0
+								label.Position = UDim2.new(0, -50, 0, 0)
+								label.Size = UDim2.new(0, 300, 0, 20)
+								label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+								label.Text = "notebook"
+								label.TextColor3 = _G.notebookespcolor or Color3.fromRGB(0, 200, 0)
+								label.TextSize = 14.000
+								label.TextStrokeTransparency = 0.000
+							end
+						end
+					end)
+				end
+			end)
+		else
+			if notebookesp then
+				notebookesp:Disconnect()
+				notebookespws:Disconnect()
+				notebookespws2:Disconnect()
+			end
+			for _, v in pairs(workspace:GetDescendants()) do
+				if v.Name == "notebookesp" then
+					v:Destroy()
+				end
+			end
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "hearing tape esp",
+	parent = "visuals",
+	callback = function(state)
+		if state == true then
+			for _, v in pairs(workspace:WaitForChild("Map"):GetChildren()) do
+				if v.Name == "HearingTape" then
+					if not v:FindFirstChild("hearingtapeesp") then
+						local bbg = Instance.new("BillboardGui")
+						local label = Instance.new("TextLabel")
+	
+						bbg.Name = "hearingtapeesp"
+						bbg.Parent = v
+						bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+						bbg.Active = true
+						bbg.AlwaysOnTop = true
+						bbg.LightInfluence = 1.000
+						bbg.Size = UDim2.new(0, 200, 0, 50)
+	
+						label.Name = "label"
+						label.Parent = bbg
+						label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+						label.BackgroundTransparency = 1.000
+						label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+						label.BorderSizePixel = 0
+						label.Position = UDim2.new(0, -50, 0, 0)
+						label.Size = UDim2.new(0, 300, 0, 20)
+						label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+						label.Text = "hearing tape"
+						label.TextColor3 = _G.hearingtapeespcolor or Color3.fromRGB(0, 200, 0)
+						label.TextSize = 14.000
+						label.TextStrokeTransparency = 0.000
+					end
+				end
+			end
+
+			hearingtapeesp = workspace:WaitForChild("Map").ChildAdded:Connect(function(child)
+				if child.Name == "HearingTape" then
+					if not child:FindFirstChild("hearingtapeesp") then
+						local bbg = Instance.new("BillboardGui")
+						local label = Instance.new("TextLabel")
+	
+						bbg.Name = "hearingtapeesp"
+						bbg.Parent = child
+						bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+						bbg.Active = true
+						bbg.AlwaysOnTop = true
+						bbg.LightInfluence = 1.000
+						bbg.Size = UDim2.new(0, 200, 0, 50)
+	
+						label.Name = "label"
+						label.Parent = bbg
+						label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+						label.BackgroundTransparency = 1.000
+						label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+						label.BorderSizePixel = 0
+						label.Position = UDim2.new(0, -50, 0, 0)
+						label.Size = UDim2.new(0, 300, 0, 20)
+						label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+						label.Text = "hearing tape"
+						label.TextColor3 = _G.hearingtapeespcolor or Color3.fromRGB(0, 200, 0)
+						label.TextSize = 14.000
+						label.TextStrokeTransparency = 0.000
+					end
+				end
+			end)
+
+			hearingtapeespws = workspace.ChildAdded:Connect(function(child)
+				if child.Name == "Map" then
+					hearingtapeespws2 = child.ChildAdded:Connect(function(child2)
+						if child2.Name == "HearingTape" then
+							if not child2:FindFirstChild("hearingtapeesp") then
+								local bbg = Instance.new("BillboardGui")
+								local label = Instance.new("TextLabel")
+			
+								bbg.Name = "hearingtapeesp"
+								bbg.Parent = child2
+								bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+								bbg.Active = true
+								bbg.AlwaysOnTop = true
+								bbg.LightInfluence = 1.000
+								bbg.Size = UDim2.new(0, 200, 0, 50)
+			
+								label.Name = "label"
+								label.Parent = bbg
+								label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+								label.BackgroundTransparency = 1.000
+								label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+								label.BorderSizePixel = 0
+								label.Position = UDim2.new(0, -50, 0, 0)
+								label.Size = UDim2.new(0, 300, 0, 20)
+								label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+								label.Text = "hearing tape"
+								label.TextColor3 = _G.hearingtapeespcolor or Color3.fromRGB(0, 200, 0)
+								label.TextSize = 14.000
+								label.TextStrokeTransparency = 0.000
+							end
+						end
+					end)
+				end
+			end)
+		else
+			if hearingtapeesp then
+				hearingtapeesp:Disconnect()
+				hearingtapeespws:Disconnect()
+				hearingtapeespws2:Disconnect()
+			end
+			for _, v in pairs(workspace:GetDescendants()) do
+				if v.Name == "hearingtapeesp" then
+					v:Destroy()
+				end
+			end
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "trap esp",
+	parent = "visuals",
+	callback = function(state)
+		if state == true then
+			for _, v in pairs(workspace:WaitForChild("Map"):GetChildren()) do
+				if v.Name == "EXEVINES" then
+					if not v:FindFirstChild("exevinesesp") then
+						local bbg = Instance.new("BillboardGui")
+						local label = Instance.new("TextLabel")
+	
+						bbg.Name = "exevinesesp"
+						bbg.Parent = v
+						bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+						bbg.Active = true
+						bbg.AlwaysOnTop = true
+						bbg.LightInfluence = 1.000
+						bbg.Size = UDim2.new(0, 200, 0, 50)
+	
+						label.Name = "label"
+						label.Parent = bbg
+						label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+						label.BackgroundTransparency = 1.000
+						label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+						label.BorderSizePixel = 0
+						label.Position = UDim2.new(0, -50, 0, 0)
+						label.Size = UDim2.new(0, 300, 0, 20)
+						label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+						label.Text = "trap"
+						label.TextColor3 = _G.trapespcolor or Color3.fromRGB(0, 255, 255)
+						label.TextSize = 14.000
+						label.TextStrokeTransparency = 0.000
+					end
+				end
+			end
+
+			exevinesesp = workspace:WaitForChild("Map").ChildAdded:Connect(function(child)
+				if child.Name == "EXEVINES" then
+					if not child:FindFirstChild("exevinesesp") then
+						local bbg = Instance.new("BillboardGui")
+						local label = Instance.new("TextLabel")
+	
+						bbg.Name = "exevinesesp"
+						bbg.Parent = child
+						bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+						bbg.Active = true
+						bbg.AlwaysOnTop = true
+						bbg.LightInfluence = 1.000
+						bbg.Size = UDim2.new(0, 200, 0, 50)
+	
+						label.Name = "label"
+						label.Parent = bbg
+						label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+						label.BackgroundTransparency = 1.000
+						label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+						label.BorderSizePixel = 0
+						label.Position = UDim2.new(0, -50, 0, 0)
+						label.Size = UDim2.new(0, 300, 0, 20)
+						label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+						label.Text = "trap"
+						label.TextColor3 = _G.trapespcolor or Color3.fromRGB(0, 255, 255)
+						label.TextSize = 14.000
+						label.TextStrokeTransparency = 0.000
+					end
+				end
+			end)
+
+			exevinesespws = workspace.ChildAdded:Connect(function(child)
+				if child.Name == "Map" then
+					exevinesespws2 = child.ChildAdded:Connect(function(child2)
+						if child2.Name == "EXEVINES" then
+							if not child2:FindFirstChild("exevinesesp") then
+								local bbg = Instance.new("BillboardGui")
+								local label = Instance.new("TextLabel")
+			
+								bbg.Name = "exevinesesp"
+								bbg.Parent = child2
+								bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+								bbg.Active = true
+								bbg.AlwaysOnTop = true
+								bbg.LightInfluence = 1.000
+								bbg.Size = UDim2.new(0, 200, 0, 50)
+			
+								label.Name = "label"
+								label.Parent = bbg
+								label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+								label.BackgroundTransparency = 1.000
+								label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+								label.BorderSizePixel = 0
+								label.Position = UDim2.new(0, -50, 0, 0)
+								label.Size = UDim2.new(0, 300, 0, 20)
+								label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+								label.Text = "trap"
+								label.TextColor3 = _G.trapespcolor or Color3.fromRGB(0, 255, 255)
+								label.TextSize = 14.000
+								label.TextStrokeTransparency = 0.000
+							end
+						end
+					end)
+				end
+			end)
+		else
+			if exevinesesp then
+				exevinesesp:Disconnect()
+				exevinesespws:Disconnect()
+				exevinesespws2:Disconnect()
+			end
+			for _, v in pairs(workspace:GetDescendants()) do
+				if v.Name == "exevinesesp" then
+					v:Destroy()
+				end
+			end
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "correct door esp",
+	parent = "visuals",
+	callback = function(state)
+		if state == true then
+			for _, v in pairs(workspace:WaitForChild("Map"):GetChildren()) do
+				if v.Name == "SamsoniteMap" then
+					for _, v2 in pairs(v:WaitForChild("DoorBank"):GetChildren()) do
+						local bbg = Instance.new("BillboardGui")
+						local label = Instance.new("TextLabel")
+	
+						bbg.Name = "correctdooresp"
+						bbg.Parent = v2
+						bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+						bbg.Active = true
+						bbg.AlwaysOnTop = true
+						bbg.Enabled = false
+						bbg.LightInfluence = 1.000
+						bbg.Size = UDim2.new(0, 200, 0, 50)
+	
+						label.Name = "label"
+						label.Parent = bbg
+						label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+						label.BackgroundTransparency = 1.000
+						label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+						label.BorderSizePixel = 0
+						label.Position = UDim2.new(0, -50, 0, 0)
+						label.Size = UDim2.new(0, 300, 0, 20)
+						label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+						label.Text = "correct door"
+						label.TextColor3 = _G.correctdoorespcolor or Color3.fromRGB(255, 255, 0)
+						label.TextSize = 14.000
+						label.TextStrokeTransparency = 0.000
+
+						v2:WaitForChild("DoorPrompt"):GetPropertyChangedSignal("Enabled"):Connect(function()
+							v2.correctdooresp.Enabled = v2.DoorPrompt.Enabled
+						end)
+					end
+				end
+			end
+
+			correctdooresp = workspace:WaitForChild("Map").ChildAdded:Connect(function(child)
+				if child.Name == "SamsoniteMap" then
+					for _, v in pairs(child:WaitForChild("DoorBank"):GetChildren()) do
+						local bbg = Instance.new("BillboardGui")
+						local label = Instance.new("TextLabel")
+	
+						bbg.Name = "correctdooresp"
+						bbg.Parent = v
+						bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+						bbg.Active = true
+						bbg.AlwaysOnTop = true
+						bbg.Enabled = false
+						bbg.LightInfluence = 1.000
+						bbg.Size = UDim2.new(0, 200, 0, 50)
+	
+						label.Name = "label"
+						label.Parent = bbg
+						label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+						label.BackgroundTransparency = 1.000
+						label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+						label.BorderSizePixel = 0
+						label.Position = UDim2.new(0, -50, 0, 0)
+						label.Size = UDim2.new(0, 300, 0, 20)
+						label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+						label.Text = "correct door"
+						label.TextColor3 = _G.correctdoorespcolor or Color3.fromRGB(255, 255, 0)
+						label.TextSize = 14.000
+						label.TextStrokeTransparency = 0.000
+
+						v:WaitForChild("DoorPrompt"):GetPropertyChangedSignal("Enabled"):Connect(function()
+							v.correctdooresp.Enabled = v.DoorPrompt.Enabled
+						end)
+					end
+				end
+			end)
+
+			correctdoorespws = workspace.ChildAdded:Connect(function(child)
+				if child.Name == "Map" then
+					correctdoorespws2 = child.ChildAdded:Connect(function(child2)
+						if child2.Name == "SamsoniteMap" then
+							for _, v in pairs(child2:WaitForChild("DoorBank"):GetChildren()) do
+								local bbg = Instance.new("BillboardGui")
+								local label = Instance.new("TextLabel")
+			
+								bbg.Name = "correctdooresp"
+								bbg.Parent = v
+								bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+								bbg.Active = true
+								bbg.AlwaysOnTop = true
+								bbg.Enabled = false
+								bbg.LightInfluence = 1.000
+								bbg.Size = UDim2.new(0, 200, 0, 50)
+			
+								label.Name = "label"
+								label.Parent = bbg
+								label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+								label.BackgroundTransparency = 1.000
+								label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+								label.BorderSizePixel = 0
+								label.Position = UDim2.new(0, -50, 0, 0)
+								label.Size = UDim2.new(0, 300, 0, 20)
+								label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+								label.Text = "correct door"
+								label.TextColor3 = _G.correctdoorespcolor or Color3.fromRGB(255, 255, 0)
+								label.TextSize = 14.000
+								label.TextStrokeTransparency = 0.000
+	
+								v:WaitForChild("DoorPrompt"):GetPropertyChangedSignal("Enabled"):Connect(function()
+									v.correctdooresp.Enabled = v.DoorPrompt.Enabled
+								end)
+							end
+						end
+					end)
+				end
+			end)
+		else
+			if correctdooresp then
+				correctdooresp:Disconnect()
+				correctdoorespws:Disconnect()
+				correctdoorespws2:Disconnect()
+			end
+			for _, v in pairs(workspace:GetDescendants()) do
+				if v.Name == "correctdooresp" then
+					v:Destroy()
+				end
+			end
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "lurking facade esp",
+	parent = "visuals",
+	callback = function(state)
+		if state == true then
+			for _, v in pairs(workspace:WaitForChild("Map"):GetChildren()) do
+				if v.Name == "LurkingFacade" then
+					if not v:FindFirstChild("lurkingfacadeesp") then
+						local bbg = Instance.new("BillboardGui")
+						local label = Instance.new("TextLabel")
+	
+						bbg.Name = "lurkingfacadeesp"
+						bbg.Parent = v
+						bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+						bbg.Active = true
+						bbg.AlwaysOnTop = true
+						bbg.LightInfluence = 1.000
+						bbg.Size = UDim2.new(0, 200, 0, 50)
+	
+						label.Name = "label"
+						label.Parent = bbg
+						label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+						label.BackgroundTransparency = 1.000
+						label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+						label.BorderSizePixel = 0
+						label.Position = UDim2.new(0, -50, 0, 0)
+						label.Size = UDim2.new(0, 300, 0, 20)
+						label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+						label.Text = "lurking facade"
+						label.TextColor3 = _G.lurkingfacadeespcolor or Color3.fromRGB(144, 3, 252)
+						label.TextSize = 14.000
+						label.TextStrokeTransparency = 0.000
+					end
+				end
+			end
+
+			lurkingfacadeesp = workspace:WaitForChild("Map").ChildAdded:Connect(function(child)
+				if child.Name == "LurkingFacade" then
+					if not child:FindFirstChild("lurkingfacadeesp") then
+						local bbg = Instance.new("BillboardGui")
+						local label = Instance.new("TextLabel")
+	
+						bbg.Name = "lurkingfacadeesp"
+						bbg.Parent = child
+						bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+						bbg.Active = true
+						bbg.AlwaysOnTop = true
+						bbg.LightInfluence = 1.000
+						bbg.Size = UDim2.new(0, 200, 0, 50)
+	
+						label.Name = "label"
+						label.Parent = bbg
+						label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+						label.BackgroundTransparency = 1.000
+						label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+						label.BorderSizePixel = 0
+						label.Position = UDim2.new(0, -50, 0, 0)
+						label.Size = UDim2.new(0, 300, 0, 20)
+						label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+						label.Text = "lurking facade"
+						label.TextColor3 = _G.lurkingfacadeespcolor or Color3.fromRGB(144, 3, 252)
+						label.TextSize = 14.000
+						label.TextStrokeTransparency = 0.000
+					end
+				end
+			end)
+
+			lurkingfacadeespws = workspace.ChildAdded:Connect(function(child)
+				if child.Name == "Map" then
+					lurkingfacadeespws2 = child.ChildAdded:Connect(function(child2)
+						if child2.Name == "LurkingFacade" then
+							if not child2:FindFirstChild("lurkingfacadeesp") then
+								local bbg = Instance.new("BillboardGui")
+								local label = Instance.new("TextLabel")
+			
+								bbg.Name = "lurkingfacadeesp"
+								bbg.Parent = child2
+								bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+								bbg.Active = true
+								bbg.AlwaysOnTop = true
+								bbg.LightInfluence = 1.000
+								bbg.Size = UDim2.new(0, 200, 0, 50)
+			
+								label.Name = "label"
+								label.Parent = bbg
+								label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+								label.BackgroundTransparency = 1.000
+								label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+								label.BorderSizePixel = 0
+								label.Position = UDim2.new(0, -50, 0, 0)
+								label.Size = UDim2.new(0, 300, 0, 20)
+								label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+								label.Text = "lurking facade"
+								label.TextColor3 = _G.lurkingfacadeespcolor or Color3.fromRGB(144, 3, 252)
+								label.TextSize = 14.000
+								label.TextStrokeTransparency = 0.000
+							end
+						end
+					end)
+				end
+			end)
+		else
+			if lurkingfacadeesp then
+				lurkingfacadeesp:Disconnect()
+				lurkingfacadeespws:Disconnect()
+				lurkingfacadeespws2:Disconnect()
+			end
+			for _, v in pairs(workspace:GetDescendants()) do
+				if v.Name == "lurkingfacadeesp" then
+					v:Destroy()
+				end
+			end
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "puddle esp",
+	parent = "visuals",
+	callback = function(state)
+		if state == true then
+			for _, v in pairs(workspace:WaitForChild("Map"):GetChildren()) do
+				if v.Name == "NiloPuddle" then
+					if not v:FindFirstChild("nilopuddleesp") then
+						local bbg = Instance.new("BillboardGui")
+						local label = Instance.new("TextLabel")
+	
+						bbg.Name = "nilopuddleesp"
+						bbg.Parent = v
+						bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+						bbg.Active = true
+						bbg.AlwaysOnTop = true
+						bbg.LightInfluence = 1.000
+						bbg.Size = UDim2.new(0, 200, 0, 50)
+	
+						label.Name = "label"
+						label.Parent = bbg
+						label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+						label.BackgroundTransparency = 1.000
+						label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+						label.BorderSizePixel = 0
+						label.Position = UDim2.new(0, -50, 0, 0)
+						label.Size = UDim2.new(0, 300, 0, 20)
+						label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+						label.Text = "puddle"
+						label.TextColor3 = _G.puddleespcolor or Color3.fromRGB(3, 252, 136)
+						label.TextSize = 14.000
+						label.TextStrokeTransparency = 0.000
+					end
+				end
+			end
+
+			nilopuddleesp = workspace:WaitForChild("Map").ChildAdded:Connect(function(child)
+				if child.Name == "NiloPuddle" then
+					if not child:FindFirstChild("nilopuddleesp") then
+						local bbg = Instance.new("BillboardGui")
+						local label = Instance.new("TextLabel")
+	
+						bbg.Name = "nilopuddleesp"
+						bbg.Parent = child
+						bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+						bbg.Active = true
+						bbg.AlwaysOnTop = true
+						bbg.LightInfluence = 1.000
+						bbg.Size = UDim2.new(0, 200, 0, 50)
+	
+						label.Name = "label"
+						label.Parent = bbg
+						label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+						label.BackgroundTransparency = 1.000
+						label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+						label.BorderSizePixel = 0
+						label.Position = UDim2.new(0, -50, 0, 0)
+						label.Size = UDim2.new(0, 300, 0, 20)
+						label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+						label.Text = "puddle"
+						label.TextColor3 = _G.puddleespcolor or Color3.fromRGB(3, 252, 136)
+						label.TextSize = 14.000
+						label.TextStrokeTransparency = 0.000
+					end
+				end
+			end)
+
+			nilopuddleespws = workspace.ChildAdded:Connect(function(child)
+				if child.Name == "Map" then
+					nilopuddleespws2 = child.ChildAdded:Connect(function(child2)
+						if child2.Name == "NiloPuddle" then
+							if not child2:FindFirstChild("nilopuddleesp") then
+								local bbg = Instance.new("BillboardGui")
+								local label = Instance.new("TextLabel")
+			
+								bbg.Name = "nilopuddleesp"
+								bbg.Parent = child2
+								bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+								bbg.Active = true
+								bbg.AlwaysOnTop = true
+								bbg.LightInfluence = 1.000
+								bbg.Size = UDim2.new(0, 200, 0, 50)
+			
+								label.Name = "label"
+								label.Parent = bbg
+								label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+								label.BackgroundTransparency = 1.000
+								label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+								label.BorderSizePixel = 0
+								label.Position = UDim2.new(0, -50, 0, 0)
+								label.Size = UDim2.new(0, 300, 0, 20)
+								label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+								label.Text = "puddle"
+								label.TextColor3 = _G.puddleespcolor or Color3.fromRGB(3, 252, 136)
+								label.TextSize = 14.000
+								label.TextStrokeTransparency = 0.000
+							end
+						end
+					end)
+				end
+			end)
+		else
+			if nilopuddleesp then
+				nilopuddleesp:Disconnect()
+				nilopuddleespws:Disconnect()
+				nilopuddleespws2:Disconnect()
+			end
+			for _, v in pairs(workspace:GetDescendants()) do
+				if v.Name == "nilopuddleesp" then
+					v:Destroy()
+				end
+			end
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "ink esp",
+	parent = "visuals",
+	callback = function(state)
+		if state == true then
+			for _, v in pairs(workspace:WaitForChild("Map"):GetChildren()) do
+				if v.Name == tostring(workspace.Server.RoundHandler.PlrMonster.Value) or v.Name == tostring(workspace.Server.RoundHandler.PlrMonster2.Value) then
+					if not v:FindFirstChild("inkesp") then
+						local bbg = Instance.new("BillboardGui")
+						local label = Instance.new("TextLabel")
+	
+						bbg.Name = "inkesp"
+						bbg.Parent = v
+						bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+						bbg.Active = true
+						bbg.AlwaysOnTop = true
+						bbg.LightInfluence = 1.000
+						bbg.Size = UDim2.new(0, 200, 0, 50)
+	
+						label.Name = "label"
+						label.Parent = bbg
+						label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+						label.BackgroundTransparency = 1.000
+						label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+						label.BorderSizePixel = 0
+						label.Position = UDim2.new(0, -50, 0, 0)
+						label.Size = UDim2.new(0, 300, 0, 20)
+						label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+						label.Text = "ink"
+						label.TextColor3 = _G.inkespcolor or Color3.fromRGB(3, 132, 252)
+						label.TextSize = 14.000
+						label.TextStrokeTransparency = 0.000
+					end
+				end
+			end
+
+			inkesp = workspace:WaitForChild("Map").ChildAdded:Connect(function(child)
+				if child.Name == tostring(workspace.Server.RoundHandler.PlrMonster.Value) or child.Name == tostring(workspace.Server.RoundHandler.PlrMonster2.Value) then
+					if not child:FindFirstChild("inkesp") then
+						local bbg = Instance.new("BillboardGui")
+						local label = Instance.new("TextLabel")
+	
+						bbg.Name = "inkesp"
+						bbg.Parent = child
+						bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+						bbg.Active = true
+						bbg.AlwaysOnTop = true
+						bbg.LightInfluence = 1.000
+						bbg.Size = UDim2.new(0, 200, 0, 50)
+	
+						label.Name = "label"
+						label.Parent = bbg
+						label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+						label.BackgroundTransparency = 1.000
+						label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+						label.BorderSizePixel = 0
+						label.Position = UDim2.new(0, -50, 0, 0)
+						label.Size = UDim2.new(0, 300, 0, 20)
+						label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+						label.Text = "ink"
+						label.TextColor3 = _G.inkespcolor or Color3.fromRGB(3, 132, 252)
+						label.TextSize = 14.000
+						label.TextStrokeTransparency = 0.000
+					end
+				end
+			end)
+
+			inkespws = workspace.ChildAdded:Connect(function(child)
+				if child.Name == "Map" then
+					inkespws2 = child.ChildAdded:Connect(function(child2)
+						if child2.Name == tostring(workspace.Server.RoundHandler.PlrMonster.Value) or child2.Name == tostring(workspace.Server.RoundHandler.PlrMonster2.Value) then
+							if not child2:FindFirstChild("inkesp") then
+								local bbg = Instance.new("BillboardGui")
+								local label = Instance.new("TextLabel")
+			
+								bbg.Name = "inkesp"
+								bbg.Parent = child2
+								bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+								bbg.Active = true
+								bbg.AlwaysOnTop = true
+								bbg.LightInfluence = 1.000
+								bbg.Size = UDim2.new(0, 200, 0, 50)
+			
+								label.Name = "label"
+								label.Parent = bbg
+								label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+								label.BackgroundTransparency = 1.000
+								label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+								label.BorderSizePixel = 0
+								label.Position = UDim2.new(0, -50, 0, 0)
+								label.Size = UDim2.new(0, 300, 0, 20)
+								label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+								label.Text = "ink"
+								label.TextColor3 = _G.inkespcolor or Color3.fromRGB(3, 132, 252)
+								label.TextSize = 14.000
+								label.TextStrokeTransparency = 0.000
+							end
+						end
+					end)
+				end
+			end)
+		else
+			if inkesp then
+				inkesp:Disconnect()
+				inkespws:Disconnect()
+				inkespws2:Disconnect()
+			end
+			for _, v in pairs(workspace:GetDescendants()) do
+				if v.Name == "inkesp" then
+					v:Destroy()
+				end
+			end
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "illusion esp",
+	parent = "visuals",
+	callback = function(state)
+		if state == true then
+			for _, v in pairs(workspace:WaitForChild("Map"):GetChildren()) do
+				if v.Name == tostring(workspace.Server.RoundHandler.PlrMonster.Value).." Illusion" or v.Name == tostring(workspace.Server.RoundHandler.PlrMonster2.Value).." Illusion" then
+					if not v:FindFirstChild("illusionesp") then
+						local bbg = Instance.new("BillboardGui")
+						local label = Instance.new("TextLabel")
+	
+						bbg.Name = "illusionesp"
+						bbg.Parent = v
+						bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+						bbg.Active = true
+						bbg.AlwaysOnTop = true
+						bbg.LightInfluence = 1.000
+						bbg.Size = UDim2.new(0, 200, 0, 50)
+	
+						label.Name = "label"
+						label.Parent = bbg
+						label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+						label.BackgroundTransparency = 1.000
+						label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+						label.BorderSizePixel = 0
+						label.Position = UDim2.new(0, -50, 0, 0)
+						label.Size = UDim2.new(0, 300, 0, 20)
+						label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+						label.Text = "illusion"
+						label.TextColor3 = _G.illusionespcolor or Color3.fromRGB(162, 255, 0)
+						label.TextSize = 14.000
+						label.TextStrokeTransparency = 0.000
+					end
+				end
+			end
+
+			illusionesp = workspace:WaitForChild("Map").ChildAdded:Connect(function(child)
+				if child.Name == tostring(workspace.Server.RoundHandler.PlrMonster.Value).." Illusion" or child.Name == tostring(workspace.Server.RoundHandler.PlrMonster2.Value).." Illusion" then
+					if not child:FindFirstChild("illusionesp") then
+						local bbg = Instance.new("BillboardGui")
+						local label = Instance.new("TextLabel")
+	
+						bbg.Name = "illusionesp"
+						bbg.Parent = child
+						bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+						bbg.Active = true
+						bbg.AlwaysOnTop = true
+						bbg.LightInfluence = 1.000
+						bbg.Size = UDim2.new(0, 200, 0, 50)
+	
+						label.Name = "label"
+						label.Parent = bbg
+						label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+						label.BackgroundTransparency = 1.000
+						label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+						label.BorderSizePixel = 0
+						label.Position = UDim2.new(0, -50, 0, 0)
+						label.Size = UDim2.new(0, 300, 0, 20)
+						label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+						label.Text = "illusion"
+						label.TextColor3 = _G.illusionespcolor or Color3.fromRGB(162, 255, 0)
+						label.TextSize = 14.000
+						label.TextStrokeTransparency = 0.000
+					end
+				end
+			end)
+
+			illusionespws = workspace.ChildAdded:Connect(function(child)
+				if child.Name == "Map" then
+					illusionespws2 = child.ChildAdded:Connect(function(child2)
+						if child2.Name == tostring(workspace.Server.RoundHandler.PlrMonster.Value).." Illusion" or child2.Name == tostring(workspace.Server.RoundHandler.PlrMonster2.Value).." Illusion" then
+							if not child2:FindFirstChild("illusionesp") then
+								local bbg = Instance.new("BillboardGui")
+								local label = Instance.new("TextLabel")
+			
+								bbg.Name = "illusionesp"
+								bbg.Parent = child2
+								bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+								bbg.Active = true
+								bbg.AlwaysOnTop = true
+								bbg.LightInfluence = 1.000
+								bbg.Size = UDim2.new(0, 200, 0, 50)
+			
+								label.Name = "label"
+								label.Parent = bbg
+								label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+								label.BackgroundTransparency = 1.000
+								label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+								label.BorderSizePixel = 0
+								label.Position = UDim2.new(0, -50, 0, 0)
+								label.Size = UDim2.new(0, 300, 0, 20)
+								label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+								label.Text = "illusion"
+								label.TextColor3 = _G.illusionespcolor or Color3.fromRGB(162, 255, 0)
+								label.TextSize = 14.000
+								label.TextStrokeTransparency = 0.000
+							end
+						end
+					end)
+				end
+			end)
+		else
+			if illusionesp then
+				illusionesp:Disconnect()
+				illusionespws:Disconnect()
+				illusionespws2:Disconnect()
+			end
+			for _, v in pairs(workspace:GetDescendants()) do
+				if v.Name == "illusionesp" then
+					v:Destroy()
+				end
+			end
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "custard esp",
+	parent = "visuals",
+	callback = function(state)
+		if state == true then
+			for _, v in pairs(workspace:WaitForChild("Map"):GetChildren()) do
+				if v.Name == "Custard "..tostring(workspace.Server.RoundHandler.PlrMonster.Value) or v.Name == "Custard "..tostring(workspace.Server.RoundHandler.PlrMonster2.Value) then
+					if not v:FindFirstChild("custardesp") then
+						local bbg = Instance.new("BillboardGui")
+						local label = Instance.new("TextLabel")
+	
+						bbg.Name = "custardesp"
+						bbg.Parent = v
+						bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+						bbg.Active = true
+						bbg.AlwaysOnTop = true
+						bbg.LightInfluence = 1.000
+						bbg.Size = UDim2.new(0, 200, 0, 50)
+	
+						label.Name = "label"
+						label.Parent = bbg
+						label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+						label.BackgroundTransparency = 1.000
+						label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+						label.BorderSizePixel = 0
+						label.Position = UDim2.new(0, -50, 0, 0)
+						label.Size = UDim2.new(0, 300, 0, 20)
+						label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+						label.Text = "custard"
+						label.TextColor3 = _G.custardespcolor or Color3.fromRGB(240, 3, 252)
+						label.TextSize = 14.000
+						label.TextStrokeTransparency = 0.000
+					end
+				end
+			end
+
+			custardesp = workspace:WaitForChild("Map").ChildAdded:Connect(function(child)
+				if child.Name == "Custard "..tostring(workspace.Server.RoundHandler.PlrMonster.Value) or child.Name == "Custard "..tostring(workspace.Server.RoundHandler.PlrMonster2.Value) then
+					if not child:FindFirstChild("custardesp") then
+						local bbg = Instance.new("BillboardGui")
+						local label = Instance.new("TextLabel")
+	
+						bbg.Name = "custardesp"
+						bbg.Parent = child
+						bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+						bbg.Active = true
+						bbg.AlwaysOnTop = true
+						bbg.LightInfluence = 1.000
+						bbg.Size = UDim2.new(0, 200, 0, 50)
+	
+						label.Name = "label"
+						label.Parent = bbg
+						label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+						label.BackgroundTransparency = 1.000
+						label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+						label.BorderSizePixel = 0
+						label.Position = UDim2.new(0, -50, 0, 0)
+						label.Size = UDim2.new(0, 300, 0, 20)
+						label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+						label.Text = "custard"
+						label.TextColor3 = _G.custardespcolor or Color3.fromRGB(240, 3, 252)
+						label.TextSize = 14.000
+						label.TextStrokeTransparency = 0.000
+					end
+				end
+			end)
+
+			custardespws = workspace.ChildAdded:Connect(function(child)
+				if child.Name == "Map" then
+					custardespws2 = child.ChildAdded:Connect(function(child2)
+						if child2.Name == "Custard "..tostring(workspace.Server.RoundHandler.PlrMonster.Value) or child2.Name == "Custard "..tostring(workspace.Server.RoundHandler.PlrMonster2.Value) then
+							if not child2:FindFirstChild("custardesp") then
+								local bbg = Instance.new("BillboardGui")
+								local label = Instance.new("TextLabel")
+			
+								bbg.Name = "custardesp"
+								bbg.Parent = child2
+								bbg.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+								bbg.Active = true
+								bbg.AlwaysOnTop = true
+								bbg.LightInfluence = 1.000
+								bbg.Size = UDim2.new(0, 200, 0, 50)
+			
+								label.Name = "label"
+								label.Parent = bbg
+								label.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+								label.BackgroundTransparency = 1.000
+								label.BorderColor3 = Color3.fromRGB(0, 0, 0)
+								label.BorderSizePixel = 0
+								label.Position = UDim2.new(0, -50, 0, 0)
+								label.Size = UDim2.new(0, 300, 0, 20)
+								label.FontFace = Font.new([[rbxasset://fonts/families/GothamSSm.json]], Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+								label.Text = "custard"
+								label.TextColor3 = _G.custardespcolor or Color3.fromRGB(240, 3, 252)
+								label.TextSize = 14.000
+								label.TextStrokeTransparency = 0.000
+							end
+						end
+					end)
+				end
+			end)
+		else
+			if custardesp then
+				custardesp:Disconnect()
+				custardespws:Disconnect()
+				custardespws2:Disconnect()
+			end
+			for _, v in pairs(workspace:GetDescendants()) do
+				if v.Name == "custardesp" then
+					v:Destroy()
+				end
+			end
+		end
+	end,
+})
+
+paradox:colorpicker({
+	name = "survivor esp",
+	r = "255",
+	g = "255",
+	b = "255",
+	parent = "colors",
+	callback = function(color)
+		_G.survivorespcolor = color
+	end,
+})
+
+paradox:colorpicker({
+	name = "killer esp",
+	r = "255",
+	g = "0",
+	b = "0",
+	parent = "colors",
+	callback = function(color)
+		_G.killerespcolor = color
+	end,
+})
+
+paradox:colorpicker({
+	name = "item esp",
+	r = "165",
+	g = "165",
+	b = "165",
+	parent = "colors",
+	callback = function(color)
+		for _, v in pairs(workspace:GetDescendants()) do
+			if v.Name == "itemesp" then
+				v.label.TextColor3 = color
+			end
+		end
+		_G.itemespcolor = color
+	end,
+})
+
+paradox:colorpicker({
+	name = "objective esp 1",
+	r = "255",
+	g = "165",
+	b = "0",
+	parent = "colors",
+	callback = function(color)
+		for _, v in pairs(workspace:GetDescendants()) do
+			if v.Name == "objectiveesp" and v.Parent.Parent.Name == "ObjectiveInteract" or v.Parent.Parent.Name == "Collectibles" then
+				v.label.TextColor3 = color
+			end
+		end
+		_G.objectiveesp1color = color
+	end,
+})
+
+paradox:colorpicker({
+	name = "objective esp 2",
+	r = "255",
+	g = "20",
+	b = "147",
+	parent = "colors",
+	callback = function(color)
+		for _, v in pairs(workspace:GetDescendants()) do
+			if v.Name == "objectiveesp" and v.Parent.Parent.Name == "ObjectiveInteract2" or v.Parent.Parent.Name == "Collectibles" then
+				v.label.TextColor3 = color
+			end
+		end
+		_G.objectiveesp2color = color
+	end,
+})
+
+paradox:colorpicker({
+	name = "skull spider esp",
+	r = "165",
+	g = "0",
+	b = "0",
+	parent = "colors",
+	callback = function(color)
+		for _, v in pairs(workspace:GetDescendants()) do
+			if v.Name == "skullspideresp" then
+				v.label.TextColor3 = color
+			end
+		end
+		_G.skullspiderespcolor = color
+	end,
+})
+
+paradox:colorpicker({
+	name = "notebook esp",
+	r = "0",
+	g = "200",
+	b = "0",
+	parent = "colors",
+	callback = function(color)
+		for _, v in pairs(workspace:GetDescendants()) do
+			if v.Name == "notebookesp" then
+				v.label.TextColor3 = color
+			end
+		end
+		_G.notebookespcolor = color
+	end,
+})
+
+paradox:colorpicker({
+	name = "hearing tape esp",
+	r = "0",
+	g = "200",
+	b = "0",
+	parent = "colors",
+	callback = function(color)
+		for _, v in pairs(workspace:GetDescendants()) do
+			if v.Name == "hearingtapeesp" then
+				v.label.TextColor3 = color
+			end
+		end
+		_G.hearingtapeespcolor = color
+	end,
+})
+
+paradox:colorpicker({
+	name = "trap esp",
+	r = "0",
+	g = "255",
+	b = "255",
+	parent = "colors",
+	callback = function(color)
+		for _, v in pairs(workspace:GetDescendants()) do
+			if v.Name == "exevinesesp" then
+				v.label.TextColor3 = color
+			end
+		end
+		_G.trapespcolor = color
+	end,
+})
+
+paradox:colorpicker({
+	name = "correct door esp",
+	r = "255",
+	g = "255",
+	b = "0",
+	parent = "colors",
+	callback = function(color)
+		for _, v in pairs(workspace:GetDescendants()) do
+			if v.Name == "correctdooresp" then
+				v.label.TextColor3 = color
+			end
+		end
+		_G.correctdoorespcolor = color
+	end,
+})
+
+paradox:colorpicker({
+	name = "lurking facade esp",
+	r = "144",
+	g = "3",
+	b = "252",
+	parent = "colors",
+	callback = function(color)
+		for _, v in pairs(workspace:GetDescendants()) do
+			if v.Name == "lurkingfacadeesp" then
+				v.label.TextColor3 = color
+			end
+		end
+		_G.lurkingfacadeespcolor = color
+	end,
+})
+
+paradox:colorpicker({
+	name = "puddle esp",
+	r = "3",
+	g = "252",
+	b = "136",
+	parent = "colors",
+	callback = function(color)
+		for _, v in pairs(workspace:GetDescendants()) do
+			if v.Name == "nilopuddleesp" then
+				v.label.TextColor3 = color
+			end
+		end
+		_G.puddleespcolor = color
+	end,
+})
+
+paradox:colorpicker({
+	name = "ink esp",
+	r = "3",
+	g = "132",
+	b = "252",
+	parent = "colors",
+	callback = function(color)
+		for _, v in pairs(workspace:GetDescendants()) do
+			if v.Name == "inkesp" then
+				v.label.TextColor3 = color
+			end
+		end
+		_G.inkespcolor = color
+	end,
+})
+
+paradox:colorpicker({
+	name = "illusion esp",
+	r = "162",
+	g = "255",
+	b = "0",
+	parent = "colors",
+	callback = function(color)
+		for _, v in pairs(workspace:GetDescendants()) do
+			if v.Name == "illusionesp" then
+				v.label.TextColor3 = color
+			end
+		end
+		_G.illusionespcolor = color
+	end,
+})
+
+paradox:colorpicker({
+	name = "custard esp",
+	r = "240",
+	g = "3",
+	b = "252",
+	parent = "colors",
+	callback = function(color)
+		for _, v in pairs(workspace:GetDescendants()) do
+			if v.Name == "custardesp" then
+				v.label.TextColor3 = color
+			end
+		end
+		_G.custardespcolor = color
+	end,
+})
+
+paradox:toggle({
+	name = "kill all survivors",
+	parent = "other",
+	callback = function(state)
+		if state == true then
+			killallsurvivors = game:GetService("RunService").RenderStepped:Connect(function()
+				if game.Players.LocalPlayer.Character:FindFirstChild("CanDrain") then
+					for _, v in pairs(game.Players:GetChildren()) do
+						if v.Character:FindFirstChild("Aspects") then
+							if v ~= game.Players.LocalPlayer then
+								game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Character.HumanoidRootPart.CFrame
+							end
+						end
+					end
+				end
+			end)
+		else
+			killallsurvivors:Disconnect()
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "infinite stamina",
+	parent = "other",
+	callback = function(state)
+		if state == true then
+			infinitestamina = game:GetService("RunService").RenderStepped:Connect(function()
+				if _G.staminaenabled == true then
+					if game.Players.LocalPlayer.Character:FindFirstChild("Aspects") then
+						game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = game.Players.LocalPlayer.Character.Aspects.SprintSpeed.Value
+					end
+				end
+			end)
+
+			if not game:GetService("UserInputService").KeyboardEnabled then
+				game.CoreGui.paradox.stamina.Visible = true
+			else
+				infinitestaminainputbegan = game:GetService("UserInputService").InputBegan:Connect(function(input)
+					if input.KeyCode == Enum.KeyCode.LeftShift then
+						_G.staminaenabled = true
+					end
+				end)
+
+				infinitestaminainputended = game:GetService("UserInputService").InputEnded:Connect(function(input)
+					if input.KeyCode == Enum.KeyCode.LeftShift then
+						_G.staminaenabled = false
+						wait(0.1)
+						if game.Players.LocalPlayer.Character:FindFirstChild("Aspects") then
+							game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = game.Players.LocalPlayer.Character.Aspects.WalkSpeed.Value
+						else
+							game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
+						end
+					end
+				end)
+			end
+		else
+			infinitestamina:Disconnect()
+			infinitestaminainputbegan:Disconnect()
+			infinitestaminainputended:Disconnect()
+			if game.CoreGui.paradox:FindFirstChild("stamina") then
+				game.CoreGui.paradox.stamina.Visible = false
+			end
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "instantly fill coin bar",
+	parent = "other",
+	callback = function(state)
+		if state == true then
+			instantlyfillcoinbar = game:GetService("RunService").RenderStepped:Connect(function()
+				game.Players.LocalPlayer.CoinsToGive.Value = 999
+			end)
+		else
+			instantlyfillcoinbar:Disconnect()
+		end
+	end,
+})
+
+paradox:button({
+	name = "fullbright",
+	parent = "other",
+	callback = function()
+		if game.Lighting:WaitForChild("Sky") then
+			if workspace:FindFirstChild("Map") then
+				if workspace.Map:FindFirstChild("ObjectiveInteract") then
+					if workspace.Map.ObjectiveInteract:FindFirstChild("Baldloon") then
+						game.Lighting.Brightness = 1
+					else
+						game.Lighting.Brightness = 4
+					end
+				else
+					game.Lighting.Brightness = 4
+				end
+			else
+				game.Lighting.Brightness = 4
+			end
+			game.Lighting.EnvironmentSpecularScale = 0
+			game.Lighting.GlobalShadows = false
+			game.Lighting.TimeOfDay = 15
+			game.Lighting.FogEnd = 99999999
+			game.Lighting.FogStart = 0
+			game.Lighting.Atmosphere.Density = 0
+			game.Lighting.Atmosphere.Offset = 0
+			game.Lighting.Sky.CelestialBodiesShown = false
+			game.Lighting.Sky.MoonAngularSize = 0
+			game.Lighting.Sky.MoonTextureId = "rbxasset://sky/moon.jpg"
+			game.Lighting.Sky.SkyboxBk = "rbxasset://textures/sky/sky512_bk.tex"
+			game.Lighting.Sky.SkyboxDn = "rbxasset://textures/sky/sky512_dn.tex"
+			game.Lighting.Sky.SkyboxFt = "rbxasset://textures/sky/sky512_ft.tex"
+			game.Lighting.Sky.SkyboxLf = "rbxasset://textures/sky/sky512_lf.tex"
+			game.Lighting.Sky.SkyboxRt = "rbxasset://textures/sky/sky512_rt.tex"
+			game.Lighting.Sky.SkyboxUp = "rbxasset://textures/sky/sky512_up.tex"
+			game.Lighting.Sky.StarCount = 0
+			game.Lighting.Sky.SunAngularSize = 0
+			game.Lighting.Sky.SunTextureId = "rbxasset://sky/sun.jpg"
+			game.Lighting.Bloom.Enabled = false
+			game.Lighting.Blur.Enabled = false
+			game.Lighting.ColorCorrection.Enabled = false
+			game.Lighting.DepthOfField.Enabled = false
+			game.Lighting.SunRays.Enabled = false
+		end
+
+		game.Lighting.Changed:Connect(function()
+			if game.Lighting:WaitForChild("Sky") then
+				if workspace:FindFirstChild("Map") then
+					if workspace.Map:FindFirstChild("ObjectiveInteract") then
+						if workspace.Map.ObjectiveInteract:FindFirstChild("Baldloon") then
+							game.Lighting.Brightness = 1
+						else
+							game.Lighting.Brightness = 4
+						end
+					else
+						game.Lighting.Brightness = 4
+					end
+				else
+					game.Lighting.Brightness = 4
+				end
+				game.Lighting.Ambient = Color3.fromRGB(0, 0, 0)
+				game.Lighting.EnvironmentSpecularScale = 0
+				game.Lighting.GlobalShadows = false
+				game.Lighting.TimeOfDay = 15
+				game.Lighting.FogEnd = 99999999
+				game.Lighting.FogStart = 0
+				game.Lighting.Atmosphere.Density = 0
+				game.Lighting.Atmosphere.Offset = 0
+				game.Lighting.Sky.CelestialBodiesShown = false
+				game.Lighting.Sky.MoonAngularSize = 0
+				game.Lighting.Sky.MoonTextureId = "rbxasset://sky/moon.jpg"
+				game.Lighting.Sky.SkyboxBk = "rbxasset://textures/sky/sky512_bk.tex"
+				game.Lighting.Sky.SkyboxDn = "rbxasset://textures/sky/sky512_dn.tex"
+				game.Lighting.Sky.SkyboxFt = "rbxasset://textures/sky/sky512_ft.tex"
+				game.Lighting.Sky.SkyboxLf = "rbxasset://textures/sky/sky512_lf.tex"
+				game.Lighting.Sky.SkyboxRt = "rbxasset://textures/sky/sky512_rt.tex"
+				game.Lighting.Sky.SkyboxUp = "rbxasset://textures/sky/sky512_up.tex"
+				game.Lighting.Sky.StarCount = 0
+				game.Lighting.Sky.SunAngularSize = 0
+				game.Lighting.Sky.SunTextureId = "rbxasset://sky/sun.jpg"
+				game.Lighting.Bloom.Enabled = false
+				game.Lighting.Blur.Enabled = false
+				game.Lighting.ColorCorrection.Enabled = false
+				game.Lighting.DepthOfField.Enabled = false
+				game.Lighting.SunRays.Enabled = false
+			end
+		end)
+		
+		for _, v in pairs(game.Lighting:GetChildren()) do
+			v.Changed:Connect(function()
+				if game.Lighting:WaitForChild("Sky") then
+					if workspace:FindFirstChild("Map") then
+						if workspace.Map:FindFirstChild("ObjectiveInteract") then
+							if workspace.Map.ObjectiveInteract:FindFirstChild("Baldloon") then
+								game.Lighting.Brightness = 1
+							else
+								game.Lighting.Brightness = 4
+							end
+						else
+							game.Lighting.Brightness = 4
+						end
+					else
+						game.Lighting.Brightness = 4
+					end
+					game.Lighting.EnvironmentSpecularScale = 0
+					game.Lighting.GlobalShadows = false
+					game.Lighting.TimeOfDay = 15
+					game.Lighting.FogEnd = 99999999
+					game.Lighting.FogStart = 0
+					game.Lighting.Atmosphere.Density = 0
+					game.Lighting.Atmosphere.Offset = 0
+					game.Lighting.Sky.CelestialBodiesShown = false
+					game.Lighting.Sky.MoonAngularSize = 0
+					game.Lighting.Sky.MoonTextureId = "rbxasset://sky/moon.jpg"
+					game.Lighting.Sky.SkyboxBk = "rbxasset://textures/sky/sky512_bk.tex"
+					game.Lighting.Sky.SkyboxDn = "rbxasset://textures/sky/sky512_dn.tex"
+					game.Lighting.Sky.SkyboxFt = "rbxasset://textures/sky/sky512_ft.tex"
+					game.Lighting.Sky.SkyboxLf = "rbxasset://textures/sky/sky512_lf.tex"
+					game.Lighting.Sky.SkyboxRt = "rbxasset://textures/sky/sky512_rt.tex"
+					game.Lighting.Sky.SkyboxUp = "rbxasset://textures/sky/sky512_up.tex"
+					game.Lighting.Sky.StarCount = 0
+					game.Lighting.Sky.SunAngularSize = 0
+					game.Lighting.Sky.SunTextureId = "rbxasset://sky/sun.jpg"
+					game.Lighting.Bloom.Enabled = false
+					game.Lighting.Blur.Enabled = false
+					game.Lighting.ColorCorrection.Enabled = false
+					game.Lighting.DepthOfField.Enabled = false
+					game.Lighting.SunRays.Enabled = false
+				end
+			end)
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "clarity",
+	parent = "upgrades",
+	callback = function(state)
+		if state == true then
+			if not game.Players.LocalPlayer.Upgrades:FindFirstChild("Clarity") then
+				local args = {
+					[1] = game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP.Upgrades:WaitForChild("Clarity"),
+					[2] = 10,
+					[3] = "Clarity"
+				}
+				
+				game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP:WaitForChild("BuyItem"):FireServer(unpack(args))
+			end
+
+			clarityremoved = game.Players.LocalPlayer.Upgrades.ChildRemoved:Connect(function(child)
+				if child.Name == "Clarity" then
+					local args = {
+						[1] = game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP.Upgrades:WaitForChild("Clarity"),
+						[2] = 10,
+						[3] = "Clarity"
+					}
+					
+					game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP:WaitForChild("BuyItem"):FireServer(unpack(args))						
+				end
+			end)
+		else
+			clarityremoved:Disconnect()
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "flimsy",
+	parent = "upgrades",
+	callback = function(state)
+		if state == true then
+			if not game.Players.LocalPlayer.Upgrades:FindFirstChild("Flimsy") then
+				local args = {
+					[1] = game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP.Upgrades:WaitForChild("Flimsy"),
+					[2] = 10,
+					[3] = "Flimsy"
+				}
+				
+				game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP:WaitForChild("BuyItem"):FireServer(unpack(args))		
+			end
+
+			flimsyremoved = game.Players.LocalPlayer.Upgrades.ChildRemoved:Connect(function(child)
+				if child.Name == "Flimsy" then
+					local args = {
+						[1] = game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP.Upgrades:WaitForChild("Flimsy"),
+						[2] = 10,
+						[3] = "Flimsy"
+					}
+					
+					game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP:WaitForChild("BuyItem"):FireServer(unpack(args))						
+				end
+			end)
+		else
+			flimsyremoved:Disconnect()
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "prepared",
+	parent = "upgrades",
+	callback = function(state)
+		if state == true then
+			if not game.Players.LocalPlayer.Upgrades:FindFirstChild("Prepared") then
+				local args = {
+					[1] = game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP.Upgrades:WaitForChild("Prepared"),
+					[2] = 10,
+					[3] = "Prepared"
+				}
+				
+				game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP:WaitForChild("BuyItem"):FireServer(unpack(args))		
+			end
+
+			preparedremoved = game.Players.LocalPlayer.Upgrades.ChildRemoved:Connect(function(child)
+				if child.Name == "Prepared" then
+					local args = {
+						[1] = game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP.Upgrades:WaitForChild("Prepared"),
+						[2] = 10,
+						[3] = "Prepared"
+					}
+					
+					game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP:WaitForChild("BuyItem"):FireServer(unpack(args))						
+				end
+			end)
+		else
+			preparedremoved:Disconnect()
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "runner",
+	parent = "upgrades",
+	callback = function(state)
+		if state == true then
+			if not game.Players.LocalPlayer.Upgrades:FindFirstChild("Runner") then
+				local args = {
+					[1] = game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP.Upgrades:WaitForChild("Runner"),
+					[2] = 10,
+					[3] = "Runner"
+				}
+				
+				game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP:WaitForChild("BuyItem"):FireServer(unpack(args))		
+			end
+
+			runnerremoved = game.Players.LocalPlayer.Upgrades.ChildRemoved:Connect(function(child)
+				if child.Name == "Runner" then
+					local args = {
+						[1] = game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP.Upgrades:WaitForChild("Runner"),
+						[2] = 10,
+						[3] = "Runner"
+					}
+					
+					game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP:WaitForChild("BuyItem"):FireServer(unpack(args))						
+				end
+			end)
+		else
+			runnerremoved:Disconnect()
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "sixth sense",
+	parent = "upgrades",
+	callback = function(state)
+		if state == true then
+			if not game.Players.LocalPlayer.Upgrades:FindFirstChild("Sixth Sense") then
+				local args = {
+					[1] = game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP.Upgrades:WaitForChild("Sixth Sense"),
+					[2] = 10,
+					[3] = "Sixth Sense"
+				}
+				
+				game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP:WaitForChild("BuyItem"):FireServer(unpack(args))		
+			end
+
+			sixthsenseremoved = game.Players.LocalPlayer.Upgrades.ChildRemoved:Connect(function(child)
+				if child.Name == "Sixth Sense" then
+					local args = {
+						[1] = game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP.Upgrades:WaitForChild("Sixth Sense"),
+						[2] = 10,
+						[3] = "Sixth Sense"
+					}
+					
+					game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP:WaitForChild("BuyItem"):FireServer(unpack(args))						
+				end
+			end)
+		else
+			sixthsenseremoved:Disconnect()
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "sneaky",
+	parent = "upgrades",
+	callback = function(state)
+		if state == true then
+			if not game.Players.LocalPlayer.Upgrades:FindFirstChild("Sneaky") then
+				local args = {
+					[1] = game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP.Upgrades:WaitForChild("Sneaky"),
+					[2] = 10,
+					[3] = "Sneaky"
+				}
+				
+				game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP:WaitForChild("BuyItem"):FireServer(unpack(args))		
+			end
+
+			sneakyremoved = game.Players.LocalPlayer.Upgrades.ChildRemoved:Connect(function(child)
+				if child.Name == "Sneaky" then
+					local args = {
+						[1] = game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP.Upgrades:WaitForChild("Sneaky"),
+						[2] = 10,
+						[3] = "Sneaky"
+					}
+					
+					game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP:WaitForChild("BuyItem"):FireServer(unpack(args))						
+				end
+			end)
+		else
+			sneakyremoved:Disconnect()
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "tanky",
+	parent = "upgrades",
+	callback = function(state)
+		if state == true then
+			if not game.Players.LocalPlayer.Upgrades:FindFirstChild("Tanky") then
+				local args = {
+					[1] = game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP.Upgrades:WaitForChild("Tanky"),
+					[2] = 10,
+					[3] = "Tanky"
+				}
+				
+				game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP:WaitForChild("BuyItem"):FireServer(unpack(args))		
+			end
+
+			tankyremoved = game.Players.LocalPlayer.Upgrades.ChildRemoved:Connect(function(child)
+				if child.Name == "Tanky" then
+					local args = {
+						[1] = game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP.Upgrades:WaitForChild("Tanky"),
+						[2] = 10,
+						[3] = "Tanky"
+					}
+					
+					game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP:WaitForChild("BuyItem"):FireServer(unpack(args))						
+				end
+			end)
+		else
+			tankyremoved:Disconnect()
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "danger vision",
+	parent = "upgrades",
+	callback = function(state)
+		if state == true then
+			if not game.Players.LocalPlayer.Upgrades:FindFirstChild("Danger Vision") then
+				local args = {
+					[1] = game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP.Upgrades:WaitForChild("Danger Vision"),
+					[2] = 10,
+					[3] = "Danger Vision"
+				}
+				
+				game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP:WaitForChild("BuyItem"):FireServer(unpack(args))		
+			end
+
+			dangervisionremoved = game.Players.LocalPlayer.Upgrades.ChildRemoved:Connect(function(child)
+				if child.Name == "Danger Vision" then
+					local args = {
+						[1] = game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP.Upgrades:WaitForChild("Danger Vision"),
+						[2] = 10,
+						[3] = "Danger Vision"
+					}
+					
+					game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP:WaitForChild("BuyItem"):FireServer(unpack(args))						
+				end
+			end)
+		else
+			dangervisionremoved:Disconnect()
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "limitless",
+	parent = "upgrades",
+	callback = function(state)
+		if state == true then
+			if not game.Players.LocalPlayer.Upgrades:FindFirstChild("Limitless") then
+				local args = {
+					[1] = game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP.Upgrades:WaitForChild("Limitless"),
+					[2] = 30,
+					[3] = "Limitless"
+				}
+				
+				game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP:WaitForChild("BuyItem"):FireServer(unpack(args))		
+			end
+
+			limitlessremoved = game.Players.LocalPlayer.Upgrades.ChildRemoved:Connect(function(child)
+				if child.Name == "Limitless" then
+					local args = {
+						[1] = game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP.Upgrades:WaitForChild("Limitless"),
+						[2] = 30,
+						[3] = "Limitless"
+					}
+					
+					game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP:WaitForChild("BuyItem"):FireServer(unpack(args))				
+				end
+			end)
+		else
+			limitlessremoved:Disconnect()
+		end
+	end,
+})
+
+paradox:toggle({
+	name = "greedy",
+	parent = "upgrades",
+	callback = function(state)
+		if state == true then
+			if not game.Players.LocalPlayer.Upgrades:FindFirstChild("Greedy") then
+				local args = {
+					[1] = game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP.Upgrades:WaitForChild("Greedy"),
+					[2] = 30,
+					[3] = "Greedy"
+				}
+				
+				game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP:WaitForChild("BuyItem"):FireServer(unpack(args))		
+			end
+
+			greedyremoved = game.Players.LocalPlayer.Upgrades.ChildRemoved:Connect(function(child)
+				if child.Name == "Greedy" then
+					local args = {
+						[1] = game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP.Upgrades:WaitForChild("Greedy"),
+						[2] = 30,
+						[3] = "Greedy"
+					}
+					
+					game:GetService("Players").LocalPlayer.PlayerGui.LobbyGUI.WorkSHOP:WaitForChild("BuyItem"):FireServer(unpack(args))						
+				end
+			end)
+		else
+			greedyremoved:Disconnect()
+		end
+	end,
+})
+
+paradox:button({
+	name = "survivor",
+	parent = "teleports",
+	callback = function()
+		local random = game.Players:GetChildren()[math.random(1, #game.Players:GetChildren())]
+		
+		if random.Character and random.Character:FindFirstChild("Aspects") and not random.Character:FindFirstChild("CanDrain") then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = random.Character.HumanoidRootPart.CFrame
+		end
+	end,
+})
+
+paradox:button({
+	name = "killer",
+	parent = "teleports",
+	callback = function()
+		local random = game.Players:GetChildren()[math.random(1, #game.Players:GetChildren())]
+		
+		if random.Character and random.Character:FindFirstChild("Aspects") and random.Character:FindFirstChild("CanDrain") then
+			game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = random.Character.HumanoidRootPart.CFrame
+		end
+	end,
+})
+
+paradox:button({
+	name = "glowstick",
+	parent = "teleports",
+	callback = function()
+		local pickUps = workspace.Server.PickUps:GetChildren()
+		if #pickUps == 0 then return end
+		
+		local items = {}  
+		
+		for _, item in ipairs(pickUps) do  
+			if item:IsA("Model") and item.Name == "Glowstick" then  
+				table.insert(items, item)  
+			end  
+		end  
+		
+		if #items == 0 then return end  
+		
+		local target = #items == 1 and items[1] or items[math.random(#items)]  
+		
+		local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")  
+		if hrp then hrp.CFrame = target:GetPivot() end
+	end,
+})
+
+paradox:button({
+	name = "flashlight",
+	parent = "teleports",
+	callback = function()
+		local pickUps = workspace.Server.PickUps:GetChildren()
+		if #pickUps == 0 then return end
+		
+		local items = {}  
+		
+		for _, item in ipairs(pickUps) do  
+			if item:IsA("Model") and item.Name == "Flashlight" then  
+				table.insert(items, item)  
+			end  
+		end  
+		
+		if #items == 0 then return end  
+		
+		local target = #items == 1 and items[1] or items[math.random(#items)]  
+		
+		local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")  
+		if hrp then hrp.CFrame = target:GetPivot() end
+	end,
+})
+
+paradox:button({
+	name = "first aid kit",
+	parent = "teleports",
+	callback = function()
+		local pickUps = workspace.Server.PickUps:GetChildren()
+		if #pickUps == 0 then return end
+		
+		local items = {}  
+		
+		for _, item in ipairs(pickUps) do  
+			if item:IsA("Model") and item.Name == "First Aid Kit" then  
+				table.insert(items, item)  
+			end  
+		end  
+		
+		if #items == 0 then return end  
+		
+		local target = #items == 1 and items[1] or items[math.random(#items)]  
+		
+		local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")  
+		if hrp then hrp.CFrame = target:GetPivot() end
+	end,
+})
+
+paradox:button({
+	name = "ultra flashlight",
+	parent = "teleports",
+	callback = function()
+		local pickUps = workspace.Server.PickUps:GetChildren()
+		if #pickUps == 0 then return end
+		
+		local items = {}  
+		
+		for _, item in ipairs(pickUps) do  
+			if item:IsA("Model") and item.Name == "Ultra Flashlight" then  
+				table.insert(items, item)  
+			end  
+		end  
+		
+		if #items == 0 then return end  
+		
+		local target = #items == 1 and items[1] or items[math.random(#items)]  
+		
+		local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")  
+		if hrp then hrp.CFrame = target:GetPivot() end
+	end,
+})
+
+paradox:button({
+	name = "stephano",
+	parent = "teleports",
+	callback = function()
+		local pickUps = workspace.Server.PickUps:GetChildren()
+		if #pickUps == 0 then return end
+		
+		local items = {}  
+		
+		for _, item in ipairs(pickUps) do  
+			if item:IsA("Model") and item.Name == "Stephano" then  
+				table.insert(items, item)  
+			end  
+		end  
+		
+		if #items == 0 then return end  
+		
+		local target = #items == 1 and items[1] or items[math.random(#items)]  
+		
+		local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")  
+		if hrp then hrp.CFrame = target:GetPivot() end
+	end,
+})
+
+paradox:button({
+	name = "doom's gauntlet",
+	parent = "teleports",
+	callback = function()
+		local pickUps = workspace.Server.PickUps:GetChildren()
+		if #pickUps == 0 then return end
+		
+		local items = {}  
+		
+		for _, item in ipairs(pickUps) do  
+			if item:IsA("Model") and item.Name == "Doom's Gauntlet" then  
+				table.insert(items, item)  
+			end  
+		end  
+		
+		if #items == 0 then return end  
+		
+		local target = #items == 1 and items[1] or items[math.random(#items)]  
+		
+		local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")  
+		if hrp then hrp.CFrame = target:GetPivot() end
+	end,
+})
+
+paradox:button({
+	name = "flashbang",
+	parent = "teleports",
+	callback = function()
+		local pickUps = workspace.Server.PickUps:GetChildren()
+		if #pickUps == 0 then return end
+		
+		local items = {}  
+		
+		for _, item in ipairs(pickUps) do  
+			if item:IsA("Model") and item.Name == "Flashbang" then  
+				table.insert(items, item)  
+			end  
+		end  
+		
+		if #items == 0 then return end  
+		
+		local target = #items == 1 and items[1] or items[math.random(#items)]  
+		
+		local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")  
+		if hrp then hrp.CFrame = target:GetPivot() end
+	end,
+})
+
+paradox:button({
+	name = "weird mask",
+	parent = "teleports",
+	callback = function()
+		local pickUps = workspace.Server.PickUps:GetChildren()
+		if #pickUps == 0 then return end
+		
+		local items = {}  
+		
+		for _, item in ipairs(pickUps) do  
+			if item:IsA("Model") and item.Name == "Weird Mask" then  
+				table.insert(items, item)  
+			end  
+		end  
+		
+		if #items == 0 then return end  
+		
+		local target = #items == 1 and items[1] or items[math.random(#items)]  
+		
+		local hrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")  
+		if hrp then hrp.CFrame = target:GetPivot() end
+	end,
+})
+
+paradox:button({
+	name = "objective item 1",
+	parent = "teleports",
+	callback = function()
+		if workspace:FindFirstChild("Map") then
+			if workspace.Map:FindFirstChild("ObjectiveInteract") then
+				local random = workspace.Map.ObjectiveInteract:GetChildren()[math.random(1, #workspace.Map.ObjectiveInteract:GetChildren())]
+		
+				if random:IsA("Model") then
+					game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = random.WorldPivot
+				elseif random:IsA("Part") then
+					game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = random.CFrame
+				elseif random:IsA("MeshPart") then
+					game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = random.CFrame
+				end
+			elseif workspace.Map:FindFirstChild("Collectibles") then
+				local random = workspace.Map.Collectibles:GetChildren()[math.random(1, #workspace.Map.Collectibles:GetChildren())]
+		
+				if random:IsA("Model") then
+					game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = random.WorldPivot
+				elseif random:IsA("Part") then
+					game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = random.CFrame
+				elseif random:IsA("MeshPart") then
+					game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = random.CFrame
+				end
+			end
+		end
+	end,
+})
+
+paradox:button({
+	name = "objective item 2",
+	parent = "teleports",
+	callback = function()
+		if workspace:FindFirstChild("Map") then
+			if workspace.Map:FindFirstChild("ObjectiveInteract2") then
+				local random = workspace.Map.ObjectiveInteract2:GetChildren()[math.random(1, #workspace.Map.ObjectiveInteract2:GetChildren())]
+		
+				if random:IsA("Model") then
+					game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = random.WorldPivot
+				elseif random:IsA("Part") then
+					game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = random.CFrame
+				elseif random:IsA("MeshPart") then
+					game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = random.CFrame
+				end
+			end
+		end
+	end,
+})
